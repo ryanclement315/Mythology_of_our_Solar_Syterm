@@ -1,6 +1,13 @@
 // src/index.js
 
-import { Body, Planet, Moon, sun, planets, moons, getMoonsForPlanet } from './solarSystem.js';
+import { sun, planets } from './bodies.js';
+
+// --- State ---
+let zoomLevel = 1.0;
+let speed = 0.005;
+let zoomedPlanet = null, zoomedMoon = null;
+let viewCenterX = sun.x, viewCenterY = sun.y;
+let isPanning = false, lastMouseX = 0, lastMouseY = 0;
 
 // --- Constants ---
 const PLANET_CLICK_RADIUS = 20;
@@ -8,16 +15,9 @@ const MOON_CLICK_RADIUS = 12;
 const SUN_CLICK_RADIUS = 40;
 const ZOOM_MIN = 0.2, ZOOM_MAX = 5.0, ZOOM_STEP = 1.15;
 
-// --- State ---
-let zoomedPlanet = null, zoomedMoon = null, zoomLevel = 1.0;
-let infoText = "", infoColor = "yellow";
-let speed = 0.005;
-
-// --- Canvas Setup ---
+// --- Canvas & UI Setup ---
 const canvas = document.getElementById('solarCanvas');
 const ctx = canvas.getContext('2d');
-
-// --- UI Elements ---
 const infoLabel = document.getElementById('infoLabel');
 const menuBtn = document.getElementById('menuBtn');
 const menuModal = document.getElementById('menuModal');
@@ -25,7 +25,7 @@ const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
 const exitBtn = document.getElementById('exitBtn');
 
-// --- Drawing ---
+// --- Drawing Helpers ---
 function drawBody(body) {
   ctx.save();
   ctx.beginPath();
@@ -39,49 +39,15 @@ function drawBody(body) {
   ctx.restore();
 }
 
-
-// --- Animation Loop ---
-function animate() {
-  // Calculate center for zoom/pan
-  let centerX = 0, centerY = 0;
-  if (zoomedPlanet) {
-    centerX = zoomedPlanet.x;
-    centerY = zoomedPlanet.y;
-  } else if (zoomedMoon) {
-    centerX = zoomedMoon.x;
-    centerY = zoomedMoon.y;
-  }
-
-  // Reset transform and clear canvas
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Set transform for zoom and pan
-  ctx.setTransform(
-    zoomLevel, 0, 0, zoomLevel,
-    canvas.width / 2 - centerX * zoomLevel,
-    canvas.height / 2 - centerY * zoomLevel
-  );
-
-  // Move and draw planets
+function drawSystem() {
   planets.forEach((planet, i) => {
-    planet.move(speed * (1 - i * 0.08));
+    planet.orbitalSpeed = speed * (1 - i * 0.08);
+    planet.move();
     drawBody(planet);
+    planet.moons.forEach(drawBody);
   });
-
-  // Move and draw moons
-  moons.forEach(moon => {
-    moon.move(speed);
-    drawBody(moon);
-  });
-
-  // Draw sun
   drawBody(sun);
-
-  requestAnimationFrame(animate);
 }
-
-
 
 // --- Info Overlay ---
 function showInfo(text, color) {
@@ -94,53 +60,72 @@ function showInfo(text, color) {
   }
 }
 
-// --- Mouse Interaction ---
+// --- Animation Loop ---
+function animate() {
+  // Determine center (for zoom/pan/centering)
+  let centerX = zoomedPlanet ? zoomedPlanet.x : zoomedMoon ? zoomedMoon.x : viewCenterX;
+  let centerY = zoomedPlanet ? zoomedPlanet.y : zoomedMoon ? zoomedMoon.y : viewCenterY;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.setTransform(
+    zoomLevel, 0, 0, zoomLevel,
+    canvas.width / 2 - centerX * zoomLevel,
+    canvas.height / 2 - centerY * zoomLevel
+  );
+
+  drawSystem();
+  requestAnimationFrame(animate);
+}
+
+// --- Mouse & Interaction Handlers ---
+function getWorldCoords(mx, my) {
+  let centerX = zoomedPlanet ? zoomedPlanet.x : zoomedMoon ? zoomedMoon.x : viewCenterX;
+  let centerY = zoomedPlanet ? zoomedPlanet.y : zoomedMoon ? zoomedMoon.y : viewCenterY;
+  return {
+    x: (mx - canvas.width / 2) / zoomLevel + centerX,
+    y: (my - canvas.height / 2) / zoomLevel + centerY
+  };
+}
+
 canvas.addEventListener('click', function(e) {
-  // Transform mouse coordinates to world coordinates
   const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left);
-  const my = (e.clientY - rect.top);
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const { x, y } = getWorldCoords(mx, my);
 
-  // Undo canvas transform
-  let centerX = 0, centerY = 0;
-  if (zoomedPlanet) {
-    centerX = zoomedPlanet.x;
-    centerY = zoomedPlanet.y;
-  } else if (zoomedMoon) {
-    centerX = zoomedMoon.x;
-    centerY = zoomedMoon.y;
-  }
-  const x = (mx - canvas.width / 2) / zoomLevel + centerX;
-  const y = (my - canvas.height / 2) / zoomLevel + centerY;
-
-  // Check planets
+  // Planets
   for (let planet of planets) {
     if (Math.hypot(x - planet.x, y - planet.y) < PLANET_CLICK_RADIUS) {
-      zoomedPlanet = planet;
-      zoomedMoon = null;
-      const moonsList = getMoonsForPlanet(planet);
-      if (moonsList.length) {
-        const moonNames = moonsList.map(m => m.name).join(', ');
-        showInfo(`${planet.name}\nMoons: ${moonNames}`, planet.color);
-      } else {
-        showInfo(`${planet.name}\nNo moons`, planet.color);
+      zoomedPlanet = planet; zoomedMoon = null;
+      viewCenterX = planet.x; viewCenterY = planet.y;
+      const moonNames = planet.moons.map(m => m.name).join(', ');
+      showInfo(
+        `${planet.name}\n${planet.moons.length ? "Moons: " + moonNames : "No moons"}\n${planet.description}\nMyth: ${planet.mythOrigin}`,
+        planet.color
+      );
+      return;
+    }
+  }
+  // Moons
+  for (let planet of planets) {
+    for (let moon of planet.moons) {
+      if (Math.hypot(x - moon.x, y - moon.y) < MOON_CLICK_RADIUS) {
+        zoomedMoon = moon; zoomedPlanet = null;
+        viewCenterX = moon.x; viewCenterY = moon.y;
+        showInfo(
+          `${moon.name}\nOrbits: ${planet.name}\n${moon.description}\nMyth: ${moon.mythOrigin}`,
+          moon.color
+        );
+        return;
       }
-      return;
     }
   }
-  // Check moons
-  for (let moon of moons) {
-    if (Math.hypot(x - moon.x, y - moon.y) < MOON_CLICK_RADIUS) {
-      zoomedMoon = moon;
-      zoomedPlanet = null;
-      showInfo(`${moon.name}\nOrbits: ${moon.parent.name}`, moon.color);
-      return;
-    }
-  }
-  // Check sun
+  // Sun
   if (Math.hypot(x - sun.x, y - sun.y) < SUN_CLICK_RADIUS) {
     zoomedPlanet = zoomedMoon = null;
-    showInfo("Sun", "yellow");
+    viewCenterX = sun.x; viewCenterY = sun.y;
+    showInfo(`Sun\n${sun.description}\nMyth: ${sun.mythOrigin}`, "yellow");
     return;
   }
   // Empty space
@@ -148,30 +133,37 @@ canvas.addEventListener('click', function(e) {
   showInfo("", "yellow");
 });
 
-// --- Mouse Wheel Zoom ---
+canvas.addEventListener('mousedown', (e) => {
+  isPanning = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  zoomedPlanet = null;
+  zoomedMoon = null;
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  const dx = e.clientX - lastMouseX, dy = e.clientY - lastMouseY;
+  viewCenterX -= dx / zoomLevel;
+  viewCenterY -= dy / zoomLevel;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
+window.addEventListener('mouseup', () => { isPanning = false; });
+
 canvas.addEventListener('wheel', function(e) {
-  if (e.deltaY < 0) {
-    zoomLevel = Math.min(ZOOM_MAX, zoomLevel * ZOOM_STEP);
-  } else {
-    zoomLevel = Math.max(ZOOM_MIN, zoomLevel / ZOOM_STEP);
-  }
+  if (e.deltaY < 0) zoomLevel = Math.min(ZOOM_MAX, zoomLevel * ZOOM_STEP);
+  else zoomLevel = Math.max(ZOOM_MIN, zoomLevel / ZOOM_STEP);
   e.preventDefault();
 });
 
 // --- Menu System ---
-menuBtn.addEventListener('click', () => {
-  menuModal.style.display = 'block';
-});
-menuModal.addEventListener('mouseleave', () => {
-  menuModal.style.display = 'none';
-});
+menuBtn.addEventListener('click', () => { menuModal.style.display = 'block'; });
+menuModal.addEventListener('mouseleave', () => { menuModal.style.display = 'none'; });
 speedSlider.addEventListener('input', () => {
   speed = parseFloat(speedSlider.value);
   speedValue.textContent = speed.toFixed(3);
 });
-exitBtn.addEventListener('click', () => {
-  window.close();
-});
+exitBtn.addEventListener('click', () => { window.close(); });
 
 // --- Initialize ---
 speedValue.textContent = speed.toFixed(3);
