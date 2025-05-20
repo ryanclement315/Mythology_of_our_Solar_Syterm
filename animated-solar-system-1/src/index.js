@@ -42,20 +42,6 @@ function drawBody(body) {
 
 // --- Animation Loop ---
 function animate() {
-  
-  // DEBUG: Draw a red rectangle in the top-left corner
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = "red";
-  ctx.fillRect(0, 0, 50, 50);
-  // DEBUG: Log sun and first planet position
-  console.log("Sun:", sun.x, sun.y, "First planet:", planets[0].x, planets[0].y);
-  // DEBUG: Draw the sun at the canvas center, ignoring transforms
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.beginPath();
-  ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, 2 * Math.PI);
-  ctx.fillStyle = "yellow";
-  ctx.fill();
-
   // Calculate center for zoom/pan
   let centerX = 0, centerY = 0;
   if (zoomedPlanet) {
@@ -66,9 +52,11 @@ function animate() {
     centerY = zoomedMoon.y;
   }
 
-  // Clear and set transform for zoom/pan
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+  // Reset transform and clear canvas
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Set transform for zoom and pan
   ctx.setTransform(
     zoomLevel, 0, 0, zoomLevel,
     canvas.width / 2 - centerX * zoomLevel,
@@ -78,23 +66,21 @@ function animate() {
   // Move and draw planets
   planets.forEach((planet, i) => {
     planet.move(speed * (1 - i * 0.08));
-    planet.setSize(1); // Don't scale here, handled by transform
     drawBody(planet);
   });
 
   // Move and draw moons
   moons.forEach(moon => {
     moon.move(speed);
-    moon.setSize(1); // Don't scale here, handled by transform
     drawBody(moon);
   });
 
   // Draw sun
-  sun.setSize(1); // Don't scale here, handled by transform
   drawBody(sun);
 
   requestAnimationFrame(animate);
 }
+
 
 
 // --- Info Overlay ---
