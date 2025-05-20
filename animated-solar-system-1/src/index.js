@@ -52,20 +52,70 @@ function drawBody(body) {
   ctx.restore();
 }
 
+function drawPlanetTrail(planet) {
+  if (!planet.trail || planet.trail.length < 2) return;
+  ctx.save();
+  for (let i = 1; i < planet.trail.length; i++) {
+    const t = i / planet.trail.length;
+    const alpha = t * 0.35; // Fainter than moons if you like
+    const width = Math.max(2, planet.size * 2.00 * t); // Taper: thickest at planet, thinnest at tail
+
+    ctx.beginPath();
+    ctx.moveTo(planet.trail[i - 1].x, planet.trail[i - 1].y);
+    ctx.lineTo(planet.trail[i].x, planet.trail[i].y);
+    ctx.strokeStyle = planet.color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.shadowColor = planet.color;
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1.0;
+  ctx.restore();
+}
+
+
+function drawMoonTrail(moon) {
+  if (!moon.trail || moon.trail.length < 2) return;
+  ctx.save();
+  for (let i = 1; i < moon.trail.length; i++) {
+    const t = i / moon.trail.length; // 0 (tail) ... 1 (head, near moon)
+    const alpha = t * 0.1; // 0.1 = max opacity at the head
+    // Taper: thickest at the head (moon), thinnest at the tail
+    const width = Math.max(1, moon.size * 1.5 * t);
+
+    ctx.beginPath();
+    ctx.moveTo(moon.trail[i - 1].x, moon.trail[i - 1].y);
+    ctx.lineTo(moon.trail[i].x, moon.trail[i].y);
+    ctx.strokeStyle = moon.color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.shadowColor = moon.color;
+    ctx.shadowBlur = 6;
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1.0;
+  ctx.restore();
+}
+
+
+
 
 function drawSystem() {
   planets.forEach((planet, i) => {
     planet.orbitalSpeed = speed * (1 - i * 0.08);
-    // Update each moon's speed based on the global speed
+    planet.move();
+    drawPlanetTrail(planet);
+    drawBody(planet);
     planet.moons.forEach(moon => {
       moon.orbitalSpeed = speed * (moon.baseOrbitalSpeed / 0.005);
+      drawMoonTrail(moon);
+      drawBody(moon);
     });
-    planet.move();
-    drawBody(planet);
-    planet.moons.forEach(drawBody);
   });
   drawBody(sun);
 }
+
 
 
 
