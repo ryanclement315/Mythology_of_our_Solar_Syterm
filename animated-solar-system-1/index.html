@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Animated Solar System</title>
+  <style>
+    body { margin: 0; background: #000; overflow: hidden; }
+    #solarCanvas { display: block; background: #000; }
+    #infoLabel {
+      position: absolute; left: 30px; top: 70px; width: 350px; height: 80px;
+      color: yellow; background: #222; font: 18px Arial, sans-serif;
+      display: none; padding: 10px; border-radius: 8px; z-index: 10;
+    }
+    #menuBtn {
+      position: absolute; left: 10px; top: 10px; z-index: 10;
+      background: #444; color: #fff; border: none; padding: 10px 20px;
+      font-size: 18px; border-radius: 6px; cursor: pointer;
+    }
+    #menuModal {
+      display: none; position: absolute; left: 100px; top: 100px; width: 250px; background: #222;
+      color: #fff; border-radius: 8px; padding: 20px; z-index: 20; box-shadow: 0 0 20px #000a;
+    }
+    #menuModal input[type="range"] { width: 100%; }
+    #menuModal button { margin-top: 20px; width: 100%; }
+  </style>
+</head>
+<body>
+  <canvas id="solarCanvas" width="1000" height="800"></canvas>
+  <div id="infoLabel"></div>
+  <button id="menuBtn">☰ Menu</button>
+  <div id="menuModal">
+    <label>Orbital Speed<br>
+      <input id="speedSlider" type="range" min="0.001" max="0.05" step="0.001" value="0.005">
+    </label>
+    <div>Speed: <span id="speedValue">0.005</span></div>
+    <button id="exitBtn" style="background: #c00; color: #fff;">Exit</button>
+  </div>
+  <script type="module" src="src/index.js"></script>
+</body>
+</html>
