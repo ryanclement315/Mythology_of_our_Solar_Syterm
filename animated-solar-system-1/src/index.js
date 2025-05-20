@@ -31,17 +31,35 @@ function drawBody(body) {
   ctx.beginPath();
   ctx.arc(body.x, body.y, body.size, 0, 2 * Math.PI);
   ctx.fillStyle = body.color;
+
+  // Sun: strong glow
   if (body.name === "Sun") {
     ctx.shadowColor = "yellow";
     ctx.shadowBlur = 30;
   }
+  // Planets: medium glow
+  else if (body.size > 3) { // Planets are larger than moons in your data
+    ctx.shadowColor = body.color;
+    ctx.shadowBlur = 10;
+  }
+  // Moons: subtle glow
+  else {
+    ctx.shadowColor = body.color;
+    ctx.shadowBlur = 4;
+  }
+
   ctx.fill();
   ctx.restore();
 }
 
+
 function drawSystem() {
   planets.forEach((planet, i) => {
     planet.orbitalSpeed = speed * (1 - i * 0.08);
+    // Update each moon's speed based on the global speed
+    planet.moons.forEach(moon => {
+      moon.orbitalSpeed = speed * (moon.baseOrbitalSpeed / 0.005);
+    });
     planet.move();
     drawBody(planet);
     planet.moons.forEach(drawBody);
@@ -49,12 +67,14 @@ function drawSystem() {
   drawBody(sun);
 }
 
+
+
 // --- Info Overlay ---
 function showInfo(text, color) {
   if (text) {
     infoLabel.style.display = 'block';
     infoLabel.style.color = color;
-    infoLabel.textContent = text;
+    infoLabel.innerHTML = text;
   } else {
     infoLabel.style.display = 'none';
   }
@@ -100,10 +120,11 @@ canvas.addEventListener('click', function(e) {
       zoomedPlanet = planet; zoomedMoon = null;
       viewCenterX = planet.x; viewCenterY = planet.y;
       const moonNames = planet.moons.map(m => m.name).join(', ');
-      showInfo(
-        `${planet.name}\n${planet.moons.length ? "Moons: " + moonNames : "No moons"}\n${planet.description}\nMyth: ${planet.mythOrigin}`,
-        planet.color
-      );
+      let html = `<b>${planet.name}</b><br>`;
+      html += `<b>Moons:</b> ${planet.moons.length ? moonNames : "None"}<br>`;
+      html += `<i>${planet.description}</i><br>`;
+      html += `<b>Myth:</b> ${planet.mythOrigin}`;
+      showInfo(html, planet.color);
       return;
     }
   }
@@ -113,10 +134,11 @@ canvas.addEventListener('click', function(e) {
       if (Math.hypot(x - moon.x, y - moon.y) < MOON_CLICK_RADIUS) {
         zoomedMoon = moon; zoomedPlanet = null;
         viewCenterX = moon.x; viewCenterY = moon.y;
-        showInfo(
-          `${moon.name}\nOrbits: ${planet.name}\n${moon.description}\nMyth: ${moon.mythOrigin}`,
-          moon.color
-        );
+        let html = `<b>${moon.name}</b><br>`;
+        html += `<b>Orbits:</b> ${planet.name}<br>`;
+        html += `<i>${moon.description}</i><br>`;
+        html += `<b>Myth:</b> ${moon.mythOrigin}`;
+        showInfo(html, moon.color);
         return;
       }
     }
@@ -125,7 +147,10 @@ canvas.addEventListener('click', function(e) {
   if (Math.hypot(x - sun.x, y - sun.y) < SUN_CLICK_RADIUS) {
     zoomedPlanet = zoomedMoon = null;
     viewCenterX = sun.x; viewCenterY = sun.y;
-    showInfo(`Sun\n${sun.description}\nMyth: ${sun.mythOrigin}`, "yellow");
+    let html = `<b>Sun</b><br>`;
+    html += `<i>${sun.description}</i><br>`;
+    html += `<b>Myth:</b> ${sun.mythOrigin}`;
+    showInfo(html, "yellow");
     return;
   }
   // Empty space

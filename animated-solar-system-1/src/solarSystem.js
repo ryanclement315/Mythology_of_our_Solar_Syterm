@@ -16,6 +16,7 @@ export class Planet {
     this.size = size;
     this.orbitalRadius = orbitalRadius;
     this.orbitalSpeed = orbitalSpeed;
+    this.baseOrbitalSpeed = orbitalSpeed;
     this.description = description;
     this.mythOrigin = mythOrigin;
     this.angle = Math.random() * Math.PI * 2;
@@ -47,6 +48,7 @@ export class Moon {
     this.size = size;
     this.orbitalRadius = orbitalRadius;
     this.orbitalSpeed = orbitalSpeed;
+    this.baseOrbitalSpeed = orbitalSpeed;
     this.description = description;
     this.mythOrigin = mythOrigin;
     this.angle = Math.random() * Math.PI * 2;
