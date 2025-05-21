@@ -68,6 +68,6 @@ export class Moon {
 
     // Store trail positions
     this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 15) this.trail.shift(); // Keep last 15 positions
+    if (this.trail.length > 30) this.trail.shift(); // Keep last 30 positions (was 15)
   }
 }
