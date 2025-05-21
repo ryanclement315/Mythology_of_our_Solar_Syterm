@@ -18,6 +18,31 @@
       position: absolute;
       top: 0; left: 0; width: 100vw; height: 100vh;
     }
+    #planetButtons {
+      position: absolute;
+      top: 0; left: 0; width: 100vw;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 0 0 0;
+      z-index: 20;
+      pointer-events: none; /* allow canvas to get mouse events except for buttons */
+    }
+    #planetButtons button {
+      pointer-events: auto;
+      background: #222;
+      color: #fff;
+      border: 2px solid #555;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s;
+    }
+    #planetButtons button:hover {
+      background: #444;
+      border-color: #fff;
+    }
     #infoLabel {
       position: absolute; left: 30px; top: 70px;
       color: yellow; background: #222; font: 18px Arial, sans-serif;
@@ -25,7 +50,7 @@
       max-width: 350px; /* Optional: limit width, let height grow */
       word-break: break-word; /* Ensures long words wrap */
       box-sizing: border-box;
-}
+    }
 
     #menuBtn {
       position: absolute; left: 10px; top: 10px; z-index: 10;
@@ -41,6 +66,7 @@
   </style>
 </head>
 <body>
+  <div id="planetButtons"></div>
   <canvas id="solarCanvas"></canvas>
   <div id="infoLabel"></div>
   <button id="menuBtn">☰ Menu</button>

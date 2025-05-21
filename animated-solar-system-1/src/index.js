@@ -24,6 +24,8 @@ const menuModal = document.getElementById('menuModal');
 const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
 const exitBtn = document.getElementById('exitBtn');
+const planetButtonsDiv = document.getElementById('planetButtons');
+
 
 // --- Drawing Helpers ---
 function drawBody(body) {
@@ -32,20 +34,20 @@ function drawBody(body) {
   ctx.arc(body.x, body.y, body.size, 0, 2 * Math.PI);
   ctx.fillStyle = body.color;
 
-  // Sun: strong glow
+  // Calculate a shadow multiplier: 1 at slowest, 0 at fastest
+  // Adjust 0.01 to match your slider's "high speed" value
+  const shadowFactor = Math.max(0, 1 - (speed / 0.01));
+  // You can tweak 0.01 to match your slider's max value for best effect
+
   if (body.name === "Sun") {
     ctx.shadowColor = "yellow";
-    ctx.shadowBlur = 30;
-  }
-  // Planets: medium glow
-  else if (body.size > 3) { // Planets are larger than moons in your data
+    ctx.shadowBlur = 30 * shadowFactor;
+  } else if (body.size > 3) {
     ctx.shadowColor = body.color;
-    ctx.shadowBlur = 10;
-  }
-  // Moons: subtle glow
-  else {
+    ctx.shadowBlur = 10 * shadowFactor;
+  } else {
     ctx.shadowColor = body.color;
-    ctx.shadowBlur = 4;
+    ctx.shadowBlur = 4 * shadowFactor;
   }
 
   ctx.fill();
@@ -55,10 +57,12 @@ function drawBody(body) {
 function drawPlanetTrail(planet) {
   if (!planet.trail || planet.trail.length < 2) return;
   ctx.save();
+  // Fade out trail at high speed: 1 at slow, 0.3 at fast
+  const trailAlphaFactor = Math.max(0.3, 1 - (speed / 0.01));
   for (let i = 1; i < planet.trail.length; i++) {
     const t = i / planet.trail.length;
-    const alpha = t * 0.35; // Fainter than moons if you like
-    const width = Math.max(2, planet.size * 2.00 * t); // Taper: thickest at planet, thinnest at tail
+    const alpha = t * 0.35 * trailAlphaFactor;
+    const width = Math.max(2, planet.size * 2.00 * t);
 
     ctx.beginPath();
     ctx.moveTo(planet.trail[i - 1].x, planet.trail[i - 1].y);
@@ -67,21 +71,20 @@ function drawPlanetTrail(planet) {
     ctx.globalAlpha = alpha;
     ctx.lineWidth = width;
     ctx.shadowColor = planet.color;
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 8 * trailAlphaFactor;
     ctx.stroke();
   }
   ctx.globalAlpha = 1.0;
   ctx.restore();
 }
 
-
 function drawMoonTrail(moon) {
   if (!moon.trail || moon.trail.length < 2) return;
   ctx.save();
+  const trailAlphaFactor = Math.max(0.3, 1 - (speed / 0.01));
   for (let i = 1; i < moon.trail.length; i++) {
-    const t = i / moon.trail.length; // 0 (tail) ... 1 (head, near moon)
-    const alpha = t * 0.1; // 0.1 = max opacity at the head
-    // Taper: thickest at the head (moon), thinnest at the tail
+    const t = i / moon.trail.length;
+    const alpha = t * 0.1 * trailAlphaFactor;
     const width = Math.max(1, moon.size * 1.5 * t);
 
     ctx.beginPath();
@@ -91,7 +94,7 @@ function drawMoonTrail(moon) {
     ctx.globalAlpha = alpha;
     ctx.lineWidth = width;
     ctx.shadowColor = moon.color;
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 6 * trailAlphaFactor;
     ctx.stroke();
   }
   ctx.globalAlpha = 1.0;
@@ -100,24 +103,30 @@ function drawMoonTrail(moon) {
 
 
 
-
-function drawSystem() {
+// --- Simulation Update (THROTTLED) ---
+function updateSimulation() {
   planets.forEach((planet, i) => {
     planet.orbitalSpeed = speed * (1 - i * 0.08);
     planet.move();
+    planet.moons.forEach(moon => {
+      moon.orbitalSpeed = speed * (moon.baseOrbitalSpeed / 0.005);
+      moon.move(planet);
+    });
+  });
+}
+
+// --- Drawing Only ---
+function drawSystem() {
+  planets.forEach((planet) => {
     drawPlanetTrail(planet);
     drawBody(planet);
     planet.moons.forEach(moon => {
-      moon.orbitalSpeed = speed * (moon.baseOrbitalSpeed / 0.005);
       drawMoonTrail(moon);
       drawBody(moon);
     });
   });
   drawBody(sun);
 }
-
-
-
 
 // --- Info Overlay ---
 function showInfo(text, color) {
@@ -130,9 +139,49 @@ function showInfo(text, color) {
   }
 }
 
-// --- Animation Loop ---
-function animate() {
-  // Determine center (for zoom/pan/centering)
+// --- Create planet buttons ---
+function createPlanetButtons() {
+  // Sort planets by orbitalRadius (distance from sun)
+  const sortedPlanets = planets.slice().sort((a, b) => a.orbitalRadius - b.orbitalRadius);
+  planetButtonsDiv.innerHTML = '';
+  sortedPlanets.forEach(planet => {
+    const btn = document.createElement('button');
+    btn.textContent = planet.name;
+    btn.style.borderColor = planet.color;
+    btn.onclick = () => {
+      zoomedPlanet = planet;
+      zoomedMoon = null;
+      viewCenterX = planet.x;
+      viewCenterY = planet.y;
+      // Optionally show info
+      const moonNames = planet.moons.map(m => m.name).join(', ');
+      let html = `<b>${planet.name}</b><br>`;
+      html += `<b>Moons:</b> ${planet.moons.length ? moonNames : "None"}<br>`;
+      html += `<i>${planet.description}</i><br>`;
+      html += `<b>Myth:</b> ${planet.mythOrigin}`;
+      showInfo(html, planet.color);
+    };
+    planetButtonsDiv.appendChild(btn);
+  });
+}
+
+
+// --- Animation Loop with Simulation Throttle ---
+let lastSimTime = performance.now();
+const SIM_STEP_MS = 1000 / 30; // 30 simulation steps per second
+
+function animate(now = performance.now()) {
+  // --- Simulation Throttle ---
+  if (now - lastSimTime >= SIM_STEP_MS) {
+    updateSimulation();
+    lastSimTime += SIM_STEP_MS;
+    // If the browser lags, catch up:
+    if (now - lastSimTime >= SIM_STEP_MS) {
+      lastSimTime = now;
+    }
+  }
+
+  // --- Drawing ---
   let centerX = zoomedPlanet ? zoomedPlanet.x : zoomedMoon ? zoomedMoon.x : viewCenterX;
   let centerY = zoomedPlanet ? zoomedPlanet.y : zoomedMoon ? zoomedMoon.y : viewCenterY;
 
@@ -158,6 +207,7 @@ function getWorldCoords(mx, my) {
     y: (my - canvas.height / 2) / zoomLevel + centerY
   };
 }
+
 
 canvas.addEventListener('click', function(e) {
   const rect = canvas.getBoundingClientRect();
@@ -243,4 +293,5 @@ exitBtn.addEventListener('click', () => { window.close(); });
 // --- Initialize ---
 speedValue.textContent = speed.toFixed(3);
 showInfo("", "yellow");
+createPlanetButtons();
 animate();

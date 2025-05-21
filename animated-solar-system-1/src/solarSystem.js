@@ -32,7 +32,7 @@ export class Planet {
     this.y = this.orbitalRadius * Math.sin(this.angle);
 
     this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 80) this.trail.shift(); // Keep last 60 positions
+    if (this.trail.length > 40) this.trail.shift(); // Keep last 40 positions
     this.moons.forEach(moon => moon.move(this));
   }
 }
@@ -68,6 +68,6 @@ export class Moon {
 
     // Store trail positions
     this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 30) this.trail.shift(); // Keep last 30 positions
+    if (this.trail.length > 15) this.trail.shift(); // Keep last 15 positions
   }
 }

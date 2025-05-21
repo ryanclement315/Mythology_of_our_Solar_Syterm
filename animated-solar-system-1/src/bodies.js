@@ -5,6 +5,15 @@ import { Planet, Moon } from './solarSystem.js';
 // --- Scaling Factors (adjust as needed) ---
 const PLANET_DISTANCE_SCALE = 120;
 const PLANET_SIZE_SCALE = 1.5;
+const MOON_SPEED_SCALE = 0.15;
+
+// Nonlinear distance scaling: planets close to the sun are farther apart, outer planets are closer together
+function scaledDistance(au) {
+  // Add a small offset to avoid log(0)
+  //return Math.log(au + 1) * 180; // 180 is a scale factor you can tweak
+  // use square root for a more linear distance scaling
+  return Math.sqrt(au) * 300; // 300 is a scale factor you can tweak
+}
 
 // --- Sun ---
 export const sun = {
@@ -24,7 +33,7 @@ export const planets = [
     name: "Mercury",
     color: "#b5b5b5",
     size: 5 * PLANET_SIZE_SCALE,
-    orbitalRadius: 0.39 * PLANET_DISTANCE_SCALE,
+    orbitalRadius: scaledDistance(0.39),
     orbitalSpeed: 0.017,
     description: "The smallest planet and closest to the Sun.",
     mythOrigin: "Named after the Roman messenger god.",
@@ -35,7 +44,7 @@ export const planets = [
     name: "Venus",
     color: "#e3c16f",
     size: 8 * PLANET_SIZE_SCALE,
-    orbitalRadius: 0.72 * PLANET_DISTANCE_SCALE,
+    orbitalRadius: scaledDistance(0.72),
     orbitalSpeed: 0.013,
     description: "Second planet from the Sun, shrouded in thick clouds.",
     mythOrigin: "Named after the Roman goddess of love and beauty.",
@@ -46,7 +55,7 @@ export const planets = [
     name: "Earth",
     color: "blue",
     size: 9 * PLANET_SIZE_SCALE,
-    orbitalRadius: 1.0 * PLANET_DISTANCE_SCALE,
+    orbitalRadius: scaledDistance(1.0),
     orbitalSpeed: 0.01,
     description: "Our home planet, the third from the Sun.",
     mythOrigin: "Named after the Germanic word for 'ground' or 'soil'.",
@@ -56,7 +65,7 @@ export const planets = [
         color: "white",
         size: 3 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.12 * PLANET_DISTANCE_SCALE + 9 * PLANET_SIZE_SCALE + 10,
-        orbitalSpeed: 0.05,
+        orbitalSpeed: 0.05 * MOON_SPEED_SCALE,
         description: "Earth's only natural satellite. Average distance: 384,400 km.",
         mythOrigin: "Old English 'mōna', related to measurement of months."
       })
@@ -67,7 +76,7 @@ export const planets = [
     name: "Mars",
     color: "red",
     size: 7 * PLANET_SIZE_SCALE,
-    orbitalRadius: 1.52 * PLANET_DISTANCE_SCALE,
+    orbitalRadius: scaledDistance(1.52),
     orbitalSpeed: 0.008,
     description: "The red planet, fourth from the Sun.",
     mythOrigin: "Named after the Roman god of war.",
@@ -77,7 +86,7 @@ export const planets = [
         color: "lightgray",
         size: 1.5 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.08 * PLANET_DISTANCE_SCALE + 7 * PLANET_SIZE_SCALE + 10,
-        orbitalSpeed: 0.09,
+        orbitalSpeed: 0.09 * MOON_SPEED_SCALE,
         description: "Larger and closer of Mars' two moons.",
         mythOrigin: "Named after the Greek god of fear."
       }),
@@ -86,7 +95,7 @@ export const planets = [
         color: "lightgray",
         size: 1.5 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.12 * PLANET_DISTANCE_SCALE + 7 * PLANET_SIZE_SCALE + 20,
-        orbitalSpeed: 0.07,
+        orbitalSpeed: 0.07 * MOON_SPEED_SCALE,
         description: "Smaller and farther of Mars' two moons.",
         mythOrigin: "Named after the Greek god of terror."
       })
@@ -97,7 +106,7 @@ export const planets = [
     name: "Jupiter",
     color: "#e6c97b",
     size: 20 * PLANET_SIZE_SCALE,
-    orbitalRadius: 5.20 * PLANET_DISTANCE_SCALE,
+    orbitalRadius: scaledDistance(5.20),
     orbitalSpeed: 0.004,
     description: "The largest planet, a gas giant with a prominent Great Red Spot.",
     mythOrigin: "Named after the king of the Roman gods.",
@@ -107,7 +116,7 @@ export const planets = [
         color: "#f4e285",
         size: 2.5 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.17 * PLANET_DISTANCE_SCALE + 20 * PLANET_SIZE_SCALE + 12,
-        orbitalSpeed: 0.13,
+        orbitalSpeed: 0.13 * MOON_SPEED_SCALE,
         description: "Most volcanically active body in the solar system.",
         mythOrigin: "Named after a priestess of Hera loved by Zeus."
       }),
@@ -116,7 +125,7 @@ export const planets = [
         color: "#c9e0e6",
         size: 2.2 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.22 * PLANET_DISTANCE_SCALE + 20 * PLANET_SIZE_SCALE + 20,
-        orbitalSpeed: 0.10,
+        orbitalSpeed: 0.10 * MOON_SPEED_SCALE,
         description: "Icy surface with a subsurface ocean.",
         mythOrigin: "Named after a Phoenician princess loved by Zeus."
       }),
@@ -125,7 +134,7 @@ export const planets = [
         color: "#bdbdbd",
         size: 3 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.28 * PLANET_DISTANCE_SCALE + 20 * PLANET_SIZE_SCALE + 32,
-        orbitalSpeed: 0.08,
+        orbitalSpeed: 0.08 * MOON_SPEED_SCALE,
         description: "Largest moon in the solar system.",
         mythOrigin: "Named after a Trojan prince abducted by Zeus."
       }),
@@ -134,7 +143,7 @@ export const planets = [
         color: "#a6a6a6",
         size: 2.7 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.35 * PLANET_DISTANCE_SCALE + 20 * PLANET_SIZE_SCALE + 45,
-        orbitalSpeed: 0.06,
+        orbitalSpeed: 0.06 * MOON_SPEED_SCALE,
         description: "Heavily cratered and ancient surface.",
         mythOrigin: "Named after a nymph loved by Zeus."
       }),
@@ -143,7 +152,7 @@ export const planets = [
         color: "#e4cab0",
         size: 1.5 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.12 * PLANET_DISTANCE_SCALE + 20 * PLANET_SIZE_SCALE + 55,
-        orbitalSpeed: 0.16,
+        orbitalSpeed: 0.16 * MOON_SPEED_SCALE,
         description: "A small, reddish, irregular moon.",
         mythOrigin: "Named after the nymph who nursed infant Zeus."
       })
@@ -154,7 +163,7 @@ export const planets = [
     name: "Saturn",
     color: "#f4debc",
     size: 16 * PLANET_SIZE_SCALE,
-    orbitalRadius: 9.58 * PLANET_DISTANCE_SCALE,
+    orbitalRadius: scaledDistance(9.58),
     orbitalSpeed: 0.003,
     description: "Famous for its extensive ring system.",
     mythOrigin: "Named after the Roman god of agriculture.",
@@ -164,7 +173,7 @@ export const planets = [
         color: "#e3c16f",
         size: 2.8 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.27 * PLANET_DISTANCE_SCALE + 16 * PLANET_SIZE_SCALE + 12,
-        orbitalSpeed: 0.05,
+        orbitalSpeed: 0.05 * MOON_SPEED_SCALE,
         description: "Largest Saturnian moon; thick atmosphere.",
         mythOrigin: "Named after the Titans of Greek mythology."
       }),
@@ -173,7 +182,7 @@ export const planets = [
         color: "#e3e3e3",
         size: 2 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.18 * PLANET_DISTANCE_SCALE + 16 * PLANET_SIZE_SCALE + 20,
-        orbitalSpeed: 0.09,
+        orbitalSpeed: 0.09 * MOON_SPEED_SCALE,
         description: "Second-largest Saturnian moon.",
         mythOrigin: "Named after the mother of the gods in Greek mythology."
       }),
@@ -182,7 +191,7 @@ export const planets = [
         color: "#d8c792",
         size: 1.8 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.36 * PLANET_DISTANCE_SCALE + 16 * PLANET_SIZE_SCALE + 30,
-        orbitalSpeed: 0.03,
+        orbitalSpeed: 0.03 * MOON_SPEED_SCALE,
         description: "Known for its two-tone coloration.",
         mythOrigin: "Named after a Titan in Greek mythology."
       }),
@@ -191,7 +200,7 @@ export const planets = [
         color: "#f0f0f0",
         size: 1.5 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.13 * PLANET_DISTANCE_SCALE + 16 * PLANET_SIZE_SCALE + 40,
-        orbitalSpeed: 0.13,
+        orbitalSpeed: 0.13 * MOON_SPEED_SCALE,
         description: "Icy moon with bright wispy features.",
         mythOrigin: "Named after a Titaness in Greek mythology."
       }),
@@ -200,19 +209,18 @@ export const planets = [
         color: "#fafcff",
         size: 1.2 * PLANET_SIZE_SCALE,
         orbitalRadius: 0.10 * PLANET_DISTANCE_SCALE + 16 * PLANET_SIZE_SCALE + 47,
-        orbitalSpeed: 0.17,
+        orbitalSpeed: 0.17 * MOON_SPEED_SCALE,
         description: "Geologically active; icy geysers.",
         mythOrigin: "Named after a giant in Greek mythology."
       })
     ]
   }),
-
   // Uranus (5 major moons)
 new Planet({
   name: "Uranus",
   color: "#b5e3e3",
   size: 13 * PLANET_SIZE_SCALE,
-  orbitalRadius: 19.18 * PLANET_DISTANCE_SCALE,
+  orbitalRadius: scaledDistance(19.18),
   orbitalSpeed: 0.002,
   description: "An ice giant with a blue-green hue and a tilted axis.",
   mythOrigin: "Named after the Greek god of the sky.",
@@ -222,7 +230,7 @@ new Planet({
       color: "#e0e0e0",
       size: 1.2 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.10 * PLANET_DISTANCE_SCALE + 13 * PLANET_SIZE_SCALE + 10,
-      orbitalSpeed: 0.16,
+      orbitalSpeed: 0.16 * MOON_SPEED_SCALE,
       description: "Known for its extreme and varied surface features.",
       mythOrigin: "Named after a character in Shakespeare's 'The Tempest'."
     }),
@@ -231,7 +239,7 @@ new Planet({
       color: "#d0f0ff",
       size: 1.4 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.13 * PLANET_DISTANCE_SCALE + 13 * PLANET_SIZE_SCALE + 18,
-      orbitalSpeed: 0.13,
+      orbitalSpeed: 0.13 * MOON_SPEED_SCALE,
       description: "One of the brightest moons of Uranus.",
       mythOrigin: "Named after a spirit in Shakespeare's 'The Tempest'."
     }),
@@ -240,7 +248,7 @@ new Planet({
       color: "#b0b0b0",
       size: 1.3 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.16 * PLANET_DISTANCE_SCALE + 13 * PLANET_SIZE_SCALE + 26,
-      orbitalSpeed: 0.11,
+      orbitalSpeed: 0.11 * MOON_SPEED_SCALE,
       description: "A dark moon with mysterious surface features.",
       mythOrigin: "Named after a character in Alexander Pope's 'The Rape of the Lock'."
     }),
@@ -249,7 +257,7 @@ new Planet({
       color: "#e5e5e5",
       size: 1.8 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.20 * PLANET_DISTANCE_SCALE + 13 * PLANET_SIZE_SCALE + 34,
-      orbitalSpeed: 0.09,
+      orbitalSpeed: 0.09 * MOON_SPEED_SCALE,
       description: "The largest moon of Uranus.",
       mythOrigin: "Named after the queen of the fairies in Shakespeare's 'A Midsummer Night's Dream'."
     }),
@@ -258,7 +266,7 @@ new Planet({
       color: "#cccccc",
       size: 1.7 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.24 * PLANET_DISTANCE_SCALE + 13 * PLANET_SIZE_SCALE + 42,
-      orbitalSpeed: 0.07,
+      orbitalSpeed: 0.07 * MOON_SPEED_SCALE,
       description: "Second largest Uranian moon, heavily cratered.",
       mythOrigin: "Named after the king of the fairies in Shakespeare's 'A Midsummer Night's Dream'."
     })
@@ -269,7 +277,7 @@ new Planet({
   name: "Neptune",
   color: "#4b70dd",
   size: 12 * PLANET_SIZE_SCALE,
-  orbitalRadius: 30.07 * PLANET_DISTANCE_SCALE,
+  orbitalRadius: scaledDistance(30.07),
   orbitalSpeed: 0.001,
   description: "The farthest known major planet, a deep blue ice giant.",
   mythOrigin: "Named after the Roman god of the sea.",
@@ -279,7 +287,7 @@ new Planet({
       color: "#b0d0ff",
       size: 2.1 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.13 * PLANET_DISTANCE_SCALE + 12 * PLANET_SIZE_SCALE + 10,
-      orbitalSpeed: 0.10,
+      orbitalSpeed: 0.10 * MOON_SPEED_SCALE,
       description: "Largest Neptune moon, retrograde orbit, likely a captured Kuiper Belt object.",
       mythOrigin: "Named after the son of Poseidon in Greek mythology."
     }),
@@ -288,7 +296,7 @@ new Planet({
       color: "#b0b0b0",
       size: 1.2 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.16 * PLANET_DISTANCE_SCALE + 12 * PLANET_SIZE_SCALE + 18,
-      orbitalSpeed: 0.08,
+      orbitalSpeed: 0.08 * MOON_SPEED_SCALE,
       description: "Second largest Neptunian moon, irregular shape.",
       mythOrigin: "Named after a sea god in Greek mythology."
     }),
@@ -297,7 +305,7 @@ new Planet({
       color: "#e0e0e0",
       size: 1.1 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.20 * PLANET_DISTANCE_SCALE + 12 * PLANET_SIZE_SCALE + 26,
-      orbitalSpeed: 0.04,
+      orbitalSpeed: 0.04 * MOON_SPEED_SCALE,
       description: "Has a highly eccentric orbit.",
       mythOrigin: "Named after the sea nymphs in Greek mythology."
     }),
@@ -306,7 +314,7 @@ new Planet({
       color: "#cccccc",
       size: 1.0 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.10 * PLANET_DISTANCE_SCALE + 12 * PLANET_SIZE_SCALE + 34,
-      orbitalSpeed: 0.12,
+      orbitalSpeed: 0.12 * MOON_SPEED_SCALE,
       description: "Discovered by Voyager 2 in 1981.",
       mythOrigin: "Named after a lover of Poseidon in Greek mythology."
     }),
@@ -315,7 +323,7 @@ new Planet({
       color: "#dddddd",
       size: 0.9 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.08 * PLANET_DISTANCE_SCALE + 12 * PLANET_SIZE_SCALE + 42,
-      orbitalSpeed: 0.14,
+      orbitalSpeed: 0.14 * MOON_SPEED_SCALE,
       description: "One of Neptune's inner moons.",
       mythOrigin: "Named after a nymph, daughter of Poseidon."
     })
@@ -326,7 +334,7 @@ new Planet({
   name: "Pluto",
   color: "#c2b280",
   size: 3.5 * PLANET_SIZE_SCALE,
-  orbitalRadius: 39.48 * PLANET_DISTANCE_SCALE,
+  orbitalRadius: scaledDistance(39.48),
   orbitalSpeed: 0.0007,
   description: "A dwarf planet in the Kuiper Belt, formerly the ninth planet.",
   mythOrigin: "Named after the Roman god of the underworld.",
@@ -336,7 +344,7 @@ new Planet({
       color: "#b0b0b0",
       size: 1.8 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.06 * PLANET_DISTANCE_SCALE + 3.5 * PLANET_SIZE_SCALE + 10,
-      orbitalSpeed: 0.18,
+      orbitalSpeed: 0.18 * MOON_SPEED_SCALE,
       description: "Largest moon of Pluto, forms a binary system.",
       mythOrigin: "Named after the ferryman of Hades in Greek mythology."
     }),
@@ -345,7 +353,7 @@ new Planet({
       color: "#e0e0e0",
       size: 0.7 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.09 * PLANET_DISTANCE_SCALE + 3.5 * PLANET_SIZE_SCALE + 16,
-      orbitalSpeed: 0.15,
+      orbitalSpeed: 0.15 * MOON_SPEED_SCALE,
       description: "Smallest of Pluto's known moons.",
       mythOrigin: "Named after the river Styx in Greek mythology."
     }),
@@ -354,7 +362,7 @@ new Planet({
       color: "#f0f0f0",
       size: 0.8 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.12 * PLANET_DISTANCE_SCALE + 3.5 * PLANET_SIZE_SCALE + 22,
-      orbitalSpeed: 0.13,
+      orbitalSpeed: 0.13 * MOON_SPEED_SCALE,
       description: "Discovered in 2005, irregular shape.",
       mythOrigin: "Named after the Greek goddess of night."
     }),
@@ -363,7 +371,7 @@ new Planet({
       color: "#cccccc",
       size: 0.7 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.15 * PLANET_DISTANCE_SCALE + 3.5 * PLANET_SIZE_SCALE + 28,
-      orbitalSpeed: 0.11,
+      orbitalSpeed: 0.11 * MOON_SPEED_SCALE,
       description: "Small, dark moon discovered in 2011.",
       mythOrigin: "Named after the multi-headed dog guarding the underworld."
     }),
@@ -372,7 +380,7 @@ new Planet({
       color: "#e5e5e5",
       size: 0.9 * PLANET_SIZE_SCALE,
       orbitalRadius: 0.18 * PLANET_DISTANCE_SCALE + 3.5 * PLANET_SIZE_SCALE + 34,
-      orbitalSpeed: 0.09,
+      orbitalSpeed: 0.09 * MOON_SPEED_SCALE,
       description: "Second largest moon of Pluto.",
       mythOrigin: "Named after the nine-headed serpent in Greek mythology."
     })
