@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Animated Solar System</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+    }
+    #solarCanvas {
+      display: block;
+      background: #000;
+      position: absolute;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+    }
+    #planetBar {
+      position: absolute;
+      top: 0; left: 0; width: 100vw; height: 40px;
+      background: #222;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      z-index: 40; /* <-- Make this higher than speedBarContainer */
+      box-shadow: 0 2px 12px #000a;
+      pointer-events: auto;
+      padding: 0;
+    }
+    #planetButtons {
+      display: flex;
+      height: 100%;
+      align-items: stretch;
+      width: 100vw;
+      justify-content: stretch;
+      pointer-events: auto;
+      background: none;
+      box-shadow: none;
+      border-radius: 0;
+      padding: 0 0;
+      gap: 0;
+    }
+    #planetButtons button {
+      flex: 1 1 0;
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      margin: 0;
+      background: currentColor;
+      color: inherit;
+      box-shadow: none;
+      transition: box-shadow 0.2s, outline 0.2s;
+      outline: none;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0;
+      border-radius: 0;
+      box-sizing: border-box;
+    }
+    #planetButtons button:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    #planetButtons button:hover,
+    #planetButtons button.glow {
+      box-shadow: 0 0 2px 1px var(--glow-color), 0 0 0 1px var(--glow-color);
+      outline: none;
+      z-index: 2;
+    }
+    #speedBarContainer {
+      position: absolute;
+      top: 50px; /* height of planetBar */
+      right: 0;
+      width: 3vw; /* Responsive width */
+      min-width: 48px;
+      max-width: 120px;
+      height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center; /* Center slider vertically */
+      background: #222;
+      border-radius: 0;
+      box-shadow: 0 2px 12px #000a;
+      padding: 0;
+      z-index: 30;
+      pointer-events: auto;
+    }
+    #speedSlider {
+      writing-mode: bt-lr; /* vertical */
+      -webkit-appearance: slider-vertical;
+      width: 70%;              /* Responsive width inside container */
+      min-width: 32px;
+      max-width: 60px;
+      height: 80vh;            /* Responsive height */
+      max-height: calc(100vh - 100px);
+      accent-color: #ffd700;
+      pointer-events: auto;
+      border-radius: 0;
+      background: #222;
+      box-shadow: none;
+      outline: none;
+      border: none;           /* <-- No border for modern look */
+      display: block;
+      margin: 0 auto;
+    }
+    #infoLabel {
+      position: absolute;
+      left: 32px;            /* Distance from the left edge */
+      top: 80px;
+      transform: none;       /* Remove centering transform */
+      min-width: 280px;
+      max-width: 400px;
+      background: rgba(34, 34, 34, 0.85);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font: 1rem 'Segoe UI', Arial, sans-serif;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 8px 0 rgba(0,0,0,0.10);
+      padding: 28px 32px 24px 32px;
+      z-index: 100;
+      display: none;
+      transition: opacity 0.25s, transform 0.25s;
+      opacity: 0;
+      pointer-events: none;
+      word-break: break-word;
+    }
+
+    #infoLabel.show {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+      transform: none; /* Remove centering transform */
+    }
+
+    #infoLabel b {
+      font-size: 1.25rem;
+      color: #ffd700;
+      letter-spacing: 0.02em;
+    }
+
+    #infoLabel i {
+      color: #b0e0ff;
+      font-style: normal;
+      display: block;
+      margin: 10px 0 8px 0;
+    }
+
+    #infoLabel .myth {
+      color: #ffb6b6;
+      font-size: 0.98em;
+      margin-top: 8px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="planetBar">
+    <div id="planetButtons"></div>
+  </div>
+  <div id="speedBarContainer">
+    <input id="speedSlider" type="range" min="0.0001" max="0.01" step="0.0001" value="0.005" orient="vertical">
+  </div>
+  <canvas id="solarCanvas"></canvas>
+  <div id="infoLabel"></div>
+  <script>
+    // Make canvas always fit the window
+    const canvas = document.getElementById('solarCanvas');
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script type="module" src="src/index.js"></script>
+</body>
+</html>
